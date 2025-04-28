@@ -41,7 +41,7 @@ function generateUniqueSelector(element) {
   function isAtomicClass(className) {
     const atomicPatterns = [
       /^[whpmbft]-/, // 常见原子类前缀
-      /^(flex|grid|col|row)-/,
+      /^(flex|grid|gap)-/,
       /\d+/,
       /^[a-z]{1,3}$/, // 短类名
     ];
@@ -54,13 +54,21 @@ function generateUniqueSelector(element) {
       .filter((attr) => {
         const name = attr.name;
         // 排除一些不稳定或通用的属性
-        if (name.startsWith("data-v-") || name === "data-src") return false;
-        return (
-          name.startsWith("data-") ||
-          ["role", "aria-label", "name"].includes(name)
-        );
+        const excludeNames = [
+          "data-src",
+          "action",
+          "data-reg",
+          "data-error",
+          "data-regerror",
+        ];
+        if (name.startsWith("data-v-") || excludeNames.includes(name))
+          return false;
+
+        const includeNames = ["role", "aria-label", "name", "type"];
+        return name.startsWith("data-") || includeNames.includes(name);
       })
-      .map((attr) => `[${attr.name}="${attr.value}"]`);
+      .map((attr) => `[${attr.name}="${attr.value}"]`)
+      .sort((a, b) => a.length - b.length);
     return validAttributes;
   }
 
@@ -70,49 +78,43 @@ function generateUniqueSelector(element) {
     return element.className
       .trim()
       .split(/\s+/)
-      .filter((cls) => cls && !isAtomicClass(cls))
-      .map((cls) => "." + cls);
+      .filter((cls) => cls && !isAtomicClass(cls) && cls.length <= 20)
+      .map((cls) => "." + cls)
+      .sort((a, b) => a.length - b.length);
+  }
+
+  // 生成选择器路径
+  function generateSelectorPath(path) {
+    if (path.length <= 4) return path.join(" > ");
+
+    let headSelector = path[0];
+    let tailSelector = path[path.length - 1];
+    let selectArr = [];
+    for (let i = 1; i < path.length - 1; i++) {
+      // 限制选择器路径的长度
+      if (selectArr.length >= 2) break;
+
+      let curSelector = path[i];
+      if (curSelector.includes(".") || curSelector.includes("data-")) {
+        selectArr.push(curSelector);
+      }
+    }
+    return [headSelector, ...selectArr, tailSelector].join(" ");
   }
 
   let path = [];
   let current = element;
 
-  while (current && current !== document.documentElement && path.length < 4) {
-    let selectorCandidates = [];
-
-    // 1. 添加标签名
-    selectorCandidates.push(current.tagName.toLowerCase());
-
-    // 2. 检查属性选择器
-    selectorCandidates.push(...getAttributeSelectors(current));
-
-    // 3. 检查类名选择器
-    selectorCandidates.push(...getClassSelectors(current));
-
-    // 尝试为当前元素生成选择器
+  while (current && current !== document.documentElement) {
     let currentSelector = "";
-
-    // 首先尝试单个选择器
-    for (let selector of selectorCandidates) {
-      if (path.length === 0) {
-        if (isUniqueSelector(selector)) {
-          return selector;
-        }
-      } else {
-        const fullSelector = path.join(" > ") + " > " + selector;
-        if (isUniqueSelector(fullSelector)) {
-          return fullSelector;
-        }
-      }
-    }
-
-    // 如果单个选择器不够，尝试组合选择器
     const tagName = current.tagName.toLowerCase();
     const attributes = getAttributeSelectors(current);
     const classes = getClassSelectors(current);
 
-    // 组合选择器（标签名 + 属性/类名）
-    if (attributes.length > 0) {
+    // 组合选择器（标签名 + 类名 + 属性）
+    if (attributes.length > 0 && classes.length > 0) {
+      currentSelector = tagName + attributes[0] + classes[0];
+    } else if (attributes.length > 0) {
       currentSelector = tagName + attributes[0];
     } else if (classes.length > 0) {
       currentSelector = tagName + classes[0];
@@ -126,7 +128,12 @@ function generateUniqueSelector(element) {
           return currentSelector;
         }
       }
+
       path.unshift(currentSelector);
+      const fullSelector = generateSelectorPath(path);
+      if (isUniqueSelector(fullSelector)) {
+        return fullSelector;
+      }
     }
 
     current = current.parentElement;
