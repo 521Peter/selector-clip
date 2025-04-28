@@ -13,6 +13,12 @@ document.addEventListener(
   true
 );
 
+// 是否是唯一的选择器
+function isUniqueSelector(selector) {
+  const elements = document.querySelectorAll(selector);
+  return elements.length === 1;
+}
+
 // 生成唯一选择器的函数
 function generateUniqueSelector(element) {
   if (
@@ -23,52 +29,111 @@ function generateUniqueSelector(element) {
     return "";
   }
 
-  // 尝试使用ID
+  // 优先检查ID
   if (element.id) {
-    return "#" + element.id;
+    const idSelector = "#" + element.id;
+    if (isUniqueSelector(idSelector)) {
+      return idSelector;
+    }
   }
 
-  // 生成唯一路径
+  // 用于判断是否为原子类的函数
+  function isAtomicClass(className) {
+    const atomicPatterns = [
+      /^[whpmbft]-/, // 常见原子类前缀
+      /^(flex|grid|col|row)-/,
+      /\d+/,
+      /^[a-z]{1,3}$/, // 短类名
+    ];
+    return atomicPatterns.some((pattern) => pattern.test(className));
+  }
+
+  // 获取有效的属性选择器
+  function getAttributeSelectors(element) {
+    const validAttributes = Array.from(element.attributes)
+      .filter((attr) => {
+        const name = attr.name;
+        // 排除一些不稳定或通用的属性
+        if (name.startsWith("data-v-") || name === "data-src") return false;
+        return (
+          name.startsWith("data-") ||
+          ["role", "aria-label", "name"].includes(name)
+        );
+      })
+      .map((attr) => `[${attr.name}="${attr.value}"]`);
+    return validAttributes;
+  }
+
+  // 获取非原子类的类名选择器
+  function getClassSelectors(element) {
+    if (!element.className || typeof element.className !== "string") return [];
+    return element.className
+      .trim()
+      .split(/\s+/)
+      .filter((cls) => cls && !isAtomicClass(cls))
+      .map((cls) => "." + cls);
+  }
+
   let path = [];
   let current = element;
 
-  while (current && current !== document.documentElement) {
-    // 获取当前元素的标签名
-    let selector = current.tagName.toLowerCase();
+  while (current && current !== document.documentElement && path.length < 4) {
+    let selectorCandidates = [];
 
-    // 添加类
-    if (current.className && typeof current.className === "string") {
-      const classes = current.className.trim().split(/\s+/);
-      if (classes.length > 0 && classes[0] !== "") {
-        selector += "." + classes.join(".");
+    // 1. 添加标签名
+    selectorCandidates.push(current.tagName.toLowerCase());
+
+    // 2. 检查属性选择器
+    selectorCandidates.push(...getAttributeSelectors(current));
+
+    // 3. 检查类名选择器
+    selectorCandidates.push(...getClassSelectors(current));
+
+    // 尝试为当前元素生成选择器
+    let currentSelector = "";
+
+    // 首先尝试单个选择器
+    for (let selector of selectorCandidates) {
+      if (path.length === 0) {
+        if (isUniqueSelector(selector)) {
+          return selector;
+        }
+      } else {
+        const fullSelector = path.join(" > ") + " > " + selector;
+        if (isUniqueSelector(fullSelector)) {
+          return fullSelector;
+        }
       }
     }
 
-    // 尝试添加nth-child
-    if (current.parentNode) {
-      const children = Array.from(current.parentNode.children);
-      if (children.length > 1) {
-        const index = children.indexOf(current) + 1;
-        selector += `:nth-child(${index})`;
+    // 如果单个选择器不够，尝试组合选择器
+    const tagName = current.tagName.toLowerCase();
+    const attributes = getAttributeSelectors(current);
+    const classes = getClassSelectors(current);
+
+    // 组合选择器（标签名 + 属性/类名）
+    if (attributes.length > 0) {
+      currentSelector = tagName + attributes[0];
+    } else if (classes.length > 0) {
+      currentSelector = tagName + classes[0];
+    } else {
+      currentSelector = tagName;
+    }
+
+    if (currentSelector) {
+      if (path.length === 0) {
+        if (isUniqueSelector(currentSelector)) {
+          return currentSelector;
+        }
       }
+      path.unshift(currentSelector);
     }
 
-    // 将当前选择器添加到路径中
-    path.unshift(selector);
-
-    // 检查当前路径的唯一性
-    const tempPath = path.join(" > ");
-    const foundElements = document.querySelectorAll(tempPath);
-    if (foundElements.length === 1) {
-      return tempPath;
-    }
-
-    // 移动到父元素
-    current = current.parentNode;
+    current = current.parentElement;
   }
 
-  // 返回完整路径
-  return path.join(" > ");
+  // 如果没有找到唯一选择器，返回空字符串
+  return "";
 }
 
 // 复制文本到剪贴板

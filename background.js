@@ -6,8 +6,6 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "复制元素选择器",
     contexts: ["all"],
   });
-
-  // 在开发者工具Elements面板的右键菜单部分已被移除
 });
 
 // 处理右键菜单点击事件
