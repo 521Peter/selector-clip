@@ -56,7 +56,7 @@ function generateUniqueSelector(element) {
         // 排除一些不稳定或通用的属性
         const excludeNames = [
           "data-src",
-          "action",
+          "data-action",
           "data-reg",
           "data-error",
           "data-regerror",
