@@ -48,6 +48,7 @@ function generateUniqueSelector(element) {
     const atomicPatterns = [
       /^[whpmbft]-/, // 常见原子类前缀
       /^(flex|grid|gap)-/,
+      /(flex)/,
       /\d+/,
       /^[a-z]{1,3}$/, // 短类名
     ];
