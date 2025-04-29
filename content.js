@@ -19,6 +19,11 @@ function isUniqueSelector(selector) {
   return elements.length === 1;
 }
 
+// 根据选择器获取元素
+function getElementBySelector(selector) {
+  return "document.querySelector(`" + selector + "`)";
+}
+
 // 生成唯一选择器的函数
 function generateUniqueSelector(element) {
   if (
@@ -34,7 +39,7 @@ function generateUniqueSelector(element) {
     const idSelector = "#" + element.id;
     // 如果选择器唯一而且不包含数字
     if (isUniqueSelector(idSelector) && !/\d/.test(idSelector)) {
-      return idSelector;
+      return getElementBySelector(idSelector);
     }
   }
 
@@ -62,8 +67,14 @@ function generateUniqueSelector(element) {
           "data-error",
           "data-regerror",
         ];
-        if (name.startsWith("data-v-") || excludeNames.includes(name))
+        if (
+          name.startsWith("data-v-") ||
+          excludeNames.includes(name) ||
+          attr.value.length >= 15 ||
+          name.length >= 15
+        ) {
           return false;
+        }
 
         const includeNames = ["role", "aria-label", "name", "type"];
         return name.startsWith("data-") || includeNames.includes(name);
@@ -86,14 +97,15 @@ function generateUniqueSelector(element) {
 
   // 生成选择器路径
   function generateSelectorPath(path) {
-    if (path.length <= 4) return path.join(" > ");
+    const depth = 3;
+    if (path.length <= depth) return path.join(" > ");
 
     let headSelector = path[0];
     let tailSelector = path[path.length - 1];
     let selectArr = [];
     for (let i = 1; i < path.length - 1; i++) {
       // 限制选择器路径的长度
-      if (selectArr.length >= 2) break;
+      if (selectArr.length >= depth - 2) break;
 
       let curSelector = path[i];
       if (curSelector.includes(".") || curSelector.includes("data-")) {
@@ -126,14 +138,14 @@ function generateUniqueSelector(element) {
     if (currentSelector) {
       if (path.length === 0) {
         if (isUniqueSelector(currentSelector)) {
-          return currentSelector;
+          return getElementBySelector(currentSelector);
         }
       }
 
       path.unshift(currentSelector);
       const fullSelector = generateSelectorPath(path);
       if (isUniqueSelector(fullSelector)) {
-        return fullSelector;
+        return getElementBySelector(fullSelector);
       }
     }
 
