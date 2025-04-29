@@ -32,7 +32,8 @@ function generateUniqueSelector(element) {
   // 优先检查ID
   if (element.id) {
     const idSelector = "#" + element.id;
-    if (isUniqueSelector(idSelector)) {
+    // 如果选择器唯一而且不包含数字
+    if (isUniqueSelector(idSelector) && !/\d/.test(idSelector)) {
       return idSelector;
     }
   }
