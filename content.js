@@ -67,6 +67,8 @@ function generateUniqueSelector(element) {
           "data-reg",
           "data-error",
           "data-regerror",
+          "data-color",
+          "data-loading",
         ];
         if (
           name.startsWith("data-v-") ||
