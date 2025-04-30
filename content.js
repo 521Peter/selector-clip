@@ -38,7 +38,10 @@ function generateUniqueSelector(element) {
   if (element.id) {
     const idSelector = "#" + element.id;
     // 如果选择器唯一而且不包含数字
-    if (isUniqueSelector(idSelector) && !/\d/.test(idSelector)) {
+    if (
+      isUniqueSelector(idSelector) &&
+      !/\d/.test(idSelector) 
+    ) {
       return getElementBySelector(idSelector);
     }
   }
