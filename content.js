@@ -71,9 +71,12 @@ function generateUniqueSelector(element) {
           "data-loading",
         ];
         if (
+          /\d/.test(name) ||
+          /\d/.test(attr.value) ||
+          attr.value.includes(" ") ||
           name.startsWith("data-v-") ||
           excludeNames.includes(name) ||
-          attr.value.length >= 25 ||
+          attr.value.length >= 35 ||
           name.length >= 15
         ) {
           return false;
