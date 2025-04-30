@@ -77,7 +77,7 @@ function generateUniqueSelector(element) {
           name.startsWith("data-v-") ||
           excludeNames.includes(name) ||
           attr.value.length >= 35 ||
-          name.length >= 15
+          name.length >= 20
         ) {
           return false;
         }
