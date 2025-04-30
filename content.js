@@ -38,10 +38,7 @@ function generateUniqueSelector(element) {
   if (element.id) {
     const idSelector = "#" + element.id;
     // 如果选择器唯一而且不包含数字
-    if (
-      isUniqueSelector(idSelector) &&
-      !/\d/.test(idSelector) 
-    ) {
+    if (isUniqueSelector(idSelector) && !/\d/.test(idSelector)) {
       return getElementBySelector(idSelector);
     }
   }
@@ -76,7 +73,7 @@ function generateUniqueSelector(element) {
         if (
           name.startsWith("data-v-") ||
           excludeNames.includes(name) ||
-          attr.value.length >= 15 ||
+          attr.value.length >= 25 ||
           name.length >= 15
         ) {
           return false;
@@ -131,7 +128,10 @@ function generateUniqueSelector(element) {
     const classes = getClassSelectors(current);
 
     // 组合选择器（标签名 + 类名 + 属性）
-    if (attributes.length > 0 && classes.length > 0) {
+
+    if (attributes.length >= 2) {
+      currentSelector = tagName + attributes[0] + attributes[1];
+    } else if (attributes.length > 0 && classes.length > 0) {
       currentSelector = tagName + attributes[0] + classes[0];
     } else if (attributes.length > 0) {
       currentSelector = tagName + attributes[0];
