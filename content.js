@@ -129,10 +129,12 @@ function generateUniqueSelector(element) {
     const tagName = current.tagName.toLowerCase();
     const attributes = getAttributeSelectors(current);
     const classes = getClassSelectors(current);
+    const id = current.id && !/\d/.test(current.id) ? `#${current.id}` : "";
 
-    // 组合选择器（标签名 + 类名 + 属性）
-
-    if (attributes.length >= 2) {
+    // 组合选择器（标签名 + 类名 + 属性),优先使用ID选择器
+    if (id) {
+      currentSelector = tagName + id;
+    } else if (attributes.length >= 2) {
       currentSelector = tagName + attributes[0] + attributes[1];
     } else if (attributes.length > 0 && classes.length > 0) {
       currentSelector = tagName + attributes[0] + classes[0];
