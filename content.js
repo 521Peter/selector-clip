@@ -49,8 +49,8 @@ function generateUniqueSelector(element) {
       /^[whpmbft]-/, // 常见原子类前缀
       /^(flex|grid|gap)-/,
       /(flex)/,
+      /focus/i,
       /\d+/,
-      /^[a-z]{1,3}$/, // 短类名
     ];
     return atomicPatterns.some((pattern) => pattern.test(className));
   }
@@ -239,7 +239,7 @@ function createHighlightOverlay() {
     pointer-events: none;
     border: 2px solid #4285f4;
     background-color: rgba(66, 133, 244, 0.1);
-    z-index: 9998;
+    z-index: 99999;
     border-radius: 2px;
     box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.1);
   `;
