@@ -8,7 +8,8 @@ let highlightOverlay = null;
 document.addEventListener(
   "contextmenu",
   function (event) {
-    clickedElement = event.target;
+    // clickedElement = event.target;
+    clickedElement = document.elementFromPoint(event.clientX, event.clientY);
   },
   true
 );
@@ -38,7 +39,7 @@ function generateUniqueSelector(element) {
   if (element.id) {
     const idSelector = "#" + element.id;
     // 如果选择器唯一而且不包含数字
-    if (!/\d/.test(idSelector) && isUniqueSelector(idSelector)) {
+    if (isUniqueSelector(idSelector)) {
       return getElementBySelector(idSelector);
     }
   }
@@ -82,10 +83,16 @@ function generateUniqueSelector(element) {
           return false;
         }
 
-        const includeNames = ["role", "aria-label", "name", "type"];
+        const includeNames = ["role", "aria-label", "name", "type", "href"];
         return name.startsWith("data-") || includeNames.includes(name);
       })
-      .map((attr) => `[${attr.name}="${attr.value}"]`)
+      .map((attr) => {
+        if (attr.value) {
+          return `[${attr.name}="${attr.value}"]`;
+        } else {
+          return `[${attr.name}]`;
+        }
+      })
       .sort((a, b) => a.length - b.length);
     return validAttributes;
   }
@@ -96,7 +103,7 @@ function generateUniqueSelector(element) {
     return element.className
       .trim()
       .split(/\s+/)
-      .filter((cls) => cls && !isAtomicClass(cls) && cls.length <= 20)
+      .filter((cls) => cls && !isAtomicClass(cls) && cls.length <= 30)
       .map((cls) => "." + cls)
       .sort((a, b) => a.length - b.length);
   }
@@ -129,10 +136,7 @@ function generateUniqueSelector(element) {
     const tagName = current.tagName.toLowerCase();
     const attributes = getAttributeSelectors(current);
     const classes = getClassSelectors(current);
-    const id =
-      current.id && !/\d/.test(current.id) && current.id.length <= 20
-        ? `#${current.id}`
-        : "";
+    const id = current.id && current.id.length <= 20 ? `#${current.id}` : "";
 
     // 组合选择器（标签名 + 类名 + 属性),优先使用ID选择器
     if (id) {
