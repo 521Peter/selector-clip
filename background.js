@@ -20,5 +20,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "selectorGenerated") {
     console.log("生成的选择器: ", request.selector);
+  } else if (request.action === "selectorGenerationFailed") {
+    console.log("无法生成唯一选择器");
   }
 });

@@ -440,6 +440,8 @@ function onInspectClick(event) {
         action: "selectorGenerated",
         selector: selector,
       });
+    } else {
+      showNotification("无法生成唯一选择器");
     }
   }
 
@@ -459,6 +461,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       chrome.runtime.sendMessage({
         action: "selectorGenerated",
         selector: selector,
+      });
+    } else {
+      showNotification("无法生成唯一选择器");
+
+      // 通知背景脚本选择器生成失败
+      chrome.runtime.sendMessage({
+        action: "selectorGenerationFailed",
       });
     }
   } else if (request.action === "enableInspectMode") {
