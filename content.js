@@ -132,40 +132,139 @@ function generateUniqueSelector(element) {
   let current = element;
 
   while (current && current !== document.documentElement) {
-    let currentSelector = "";
     const tagName = current.tagName.toLowerCase();
     const attributes = getAttributeSelectors(current);
     const classes = getClassSelectors(current);
     const id = current.id && current.id.length <= 20 ? `#${current.id}` : "";
 
-    // 组合选择器（标签名 + 类名 + 属性),优先使用ID选择器
+    let currentSelector = "";
+
+    // 优先使用ID选择器
     if (id) {
       currentSelector = tagName + id;
-    } else if (attributes.length >= 2) {
-      currentSelector = tagName + attributes[0] + attributes[1];
-    } else if (attributes.length > 0 && classes.length > 0) {
-      currentSelector = tagName + attributes[0] + classes[0];
+      if (isUniqueSelector(currentSelector)) {
+        if (path.length === 0) {
+          return getElementBySelector(currentSelector);
+        }
+        path.unshift(currentSelector);
+        const fullSelector = generateSelectorPath(path);
+        if (isUniqueSelector(fullSelector)) {
+          return getElementBySelector(fullSelector);
+        }
+        path.shift(); // 如果不唯一，移除刚添加的选择器
+      }
+    }
+
+    // 尝试单个属性选择器
+    for (const attr of attributes) {
+      currentSelector = tagName + attr;
+      if (isUniqueSelector(currentSelector)) {
+        if (path.length === 0) {
+          return getElementBySelector(currentSelector);
+        }
+        path.unshift(currentSelector);
+        const fullSelector = generateSelectorPath(path);
+        if (isUniqueSelector(fullSelector)) {
+          return getElementBySelector(fullSelector);
+        }
+        path.shift(); // 如果不唯一，移除刚添加的选择器
+      }
+    }
+
+    // 尝试单个类名选择器
+    for (const cls of classes) {
+      currentSelector = tagName + cls;
+      if (isUniqueSelector(currentSelector)) {
+        if (path.length === 0) {
+          return getElementBySelector(currentSelector);
+        }
+        path.unshift(currentSelector);
+        const fullSelector = generateSelectorPath(path);
+        if (isUniqueSelector(fullSelector)) {
+          return getElementBySelector(fullSelector);
+        }
+        path.shift(); // 如果不唯一，移除刚添加的选择器
+      }
+    }
+
+    // 尝试组合属性选择器
+    if (attributes.length >= 2) {
+      for (let i = 0; i < attributes.length - 1; i++) {
+        for (let j = i + 1; j < attributes.length; j++) {
+          currentSelector = tagName + attributes[i] + attributes[j];
+          if (isUniqueSelector(currentSelector)) {
+            if (path.length === 0) {
+              return getElementBySelector(currentSelector);
+            }
+            path.unshift(currentSelector);
+            const fullSelector = generateSelectorPath(path);
+            if (isUniqueSelector(fullSelector)) {
+              return getElementBySelector(fullSelector);
+            }
+            path.shift();
+          }
+        }
+      }
+    }
+
+    // 尝试属性和类名组合
+    if (attributes.length > 0 && classes.length > 0) {
+      for (const attr of attributes) {
+        for (const cls of classes) {
+          currentSelector = tagName + attr + cls;
+          if (isUniqueSelector(currentSelector)) {
+            if (path.length === 0) {
+              return getElementBySelector(currentSelector);
+            }
+            path.unshift(currentSelector);
+            const fullSelector = generateSelectorPath(path);
+            if (isUniqueSelector(fullSelector)) {
+              return getElementBySelector(fullSelector);
+            }
+            path.shift();
+          }
+        }
+      }
+    }
+
+    // 尝试组合类名选择器
+    if (classes.length >= 2) {
+      for (let i = 0; i < classes.length - 1; i++) {
+        for (let j = i + 1; j < classes.length; j++) {
+          currentSelector = tagName + classes[i] + classes[j];
+          if (isUniqueSelector(currentSelector)) {
+            if (path.length === 0) {
+              return getElementBySelector(currentSelector);
+            }
+            path.unshift(currentSelector);
+            const fullSelector = generateSelectorPath(path);
+            if (isUniqueSelector(fullSelector)) {
+              return getElementBySelector(fullSelector);
+            }
+            path.shift();
+          }
+        }
+      }
+    }
+
+    // 获取最短的属性和类名
+    const shortestAttr = attributes[0];
+    const shortestClass = classes[0];
+    // 如果所有尝试都失败，使用标签名+最短的属性名+类名的组合
+    if (attributes.length > 0 && classes.length > 0) {
+      currentSelector = tagName + shortestAttr + shortestClass;
     } else if (attributes.length > 0) {
-      currentSelector = tagName + attributes[0];
+      // 只有属性
+      currentSelector = tagName + shortestAttr;
     } else if (classes.length > 0) {
-      currentSelector = tagName + classes[0];
+      // 只有类名
+      currentSelector = tagName + shortestClass;
     } else {
+      // 没有属性和类名，使用标签名
       currentSelector = tagName;
     }
 
-    if (currentSelector) {
-      if (path.length === 0) {
-        if (isUniqueSelector(currentSelector)) {
-          return getElementBySelector(currentSelector);
-        }
-      }
-
-      path.unshift(currentSelector);
-      const fullSelector = generateSelectorPath(path);
-      if (isUniqueSelector(fullSelector)) {
-        return getElementBySelector(fullSelector);
-      }
-    }
+    path.unshift(currentSelector);
 
     current = current.parentElement;
   }
