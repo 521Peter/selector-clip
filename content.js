@@ -316,7 +316,7 @@ function showNotification(message) {
     background: #333;
     color: white;
     border-radius: 4px;
-    z-index: 9999;
+    z-index: 999999;
     font-family: Arial, sans-serif;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
   `;
@@ -342,7 +342,7 @@ function createHighlightOverlay() {
     pointer-events: none;
     border: 2px solid #4285f4;
     background-color: rgba(66, 133, 244, 0.1);
-    z-index: 99999;
+    z-index: 999999;
     border-radius: 2px;
     box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.1);
   `;
