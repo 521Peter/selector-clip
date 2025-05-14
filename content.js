@@ -39,7 +39,7 @@ function generateUniqueSelector(element) {
   if (element.id) {
     const idSelector = "#" + element.id;
     // 如果选择器唯一而且不包含数字
-    if (isUniqueSelector(idSelector)) {
+    if (isUniqueSelector(idSelector) && !/\d/.test(idSelector)) {
       return getElementBySelector(idSelector);
     }
   }
@@ -140,7 +140,7 @@ function generateUniqueSelector(element) {
     let currentSelector = "";
 
     // 优先使用ID选择器
-    if (id) {
+    if (id && !/\d/.test(id)) {
       currentSelector = tagName + id;
       if (isUniqueSelector(currentSelector)) {
         if (path.length === 0) {
