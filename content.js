@@ -38,8 +38,12 @@ function generateUniqueSelector(element) {
   // 优先检查ID
   if (element.id) {
     const idSelector = "#" + element.id;
-    // 如果选择器唯一而且不包含数字
-    if (isUniqueSelector(idSelector) && !/\d/.test(idSelector)) {
+    // 如果选择器唯一而且不包含数字和字符:
+    if (
+      !/\d/.test(idSelector) &&
+      !idSelector.includes(":") &&
+      isUniqueSelector(idSelector)
+    ) {
       return getElementBySelector(idSelector);
     }
   }
@@ -140,7 +144,7 @@ function generateUniqueSelector(element) {
     let currentSelector = "";
 
     // 优先使用ID选择器
-    if (id && !/\d/.test(id)) {
+    if (id && !/\d/.test(id) && !id.includes(":")) {
       currentSelector = tagName + id;
       if (isUniqueSelector(currentSelector)) {
         if (path.length === 0) {
