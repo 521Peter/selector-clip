@@ -37,13 +37,10 @@ function generateUniqueSelector(element) {
 
   // 优先检查ID
   if (element.id) {
-    const idSelector = "#" + element.id;
-    // 如果选择器唯一而且不包含数字和字符:
-    if (
-      !/\d/.test(idSelector) &&
-      !idSelector.includes(":") &&
-      isUniqueSelector(idSelector)
-    ) {
+    let idSelector = "#" + element.id;
+    idSelector = idSelector.replaceAll(":", "\\:");
+    // 如果选择器唯一而且不包含两个或更多数字
+    if (!/\d.*\d/.test(idSelector) && isUniqueSelector(idSelector)) {
       return getElementBySelector(idSelector);
     }
   }
@@ -139,12 +136,13 @@ function generateUniqueSelector(element) {
     const tagName = current.tagName.toLowerCase();
     const attributes = getAttributeSelectors(current);
     const classes = getClassSelectors(current);
-    const id = current.id && current.id.length <= 20 ? `#${current.id}` : "";
+    let id = current.id && current.id.length <= 20 ? `#${current.id}` : "";
+    id = id.replaceAll(":", "\\:");
 
     let currentSelector = "";
 
     // 优先使用ID选择器
-    if (id && !/\d/.test(id) && !id.includes(":")) {
+    if (id && !/\d.*\d/.test(id)) {
       currentSelector = tagName + id;
       if (isUniqueSelector(currentSelector)) {
         if (path.length === 0) {
