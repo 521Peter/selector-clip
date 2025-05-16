@@ -49,7 +49,7 @@ function generateUniqueSelector(element) {
   function isAtomicClass(className) {
     const atomicPatterns = [
       /^[whpmbft]-/, // 常见原子类前缀
-      /^(flex|grid|gap)-/,
+      /^(flex|grid|gap|items|justify)-/,
       /(flex)/,
       /focus/i,
       /\d+/,
@@ -105,7 +105,7 @@ function generateUniqueSelector(element) {
       .trim()
       .split(/\s+/)
       .filter((cls) => cls && !isAtomicClass(cls) && cls.length <= 30)
-      .map((cls) => "." + cls)
+      .map((cls) => `.${cls.replaceAll(":", "\\:")}`)
       .sort((a, b) => a.length - b.length);
   }
 
